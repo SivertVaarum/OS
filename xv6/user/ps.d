@@ -1,2 +1,1 @@
-user/ps.o: user/ps.c user/user.h kernel/types.h kernel/stat.h \
- kernel/proc.h
+user/ps.o: user/ps.c kernel/types.h kernel/stat.h user/user.h

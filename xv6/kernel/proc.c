@@ -681,3 +681,30 @@ procdump(void)
     printf("\n");
   }
 }
+void
+getprocs(void){
+
+  struct proc *p;
+  char name[16];
+  int pid;
+  int state;
+
+  for(p = proc; p < &proc[NPROC]; p++){
+
+    acquire(&p->lock);
+
+    if(p->state != UNUSED){
+      safestrcpy(name, p->name, sizeof(name)); //Rather copy than wait for printf() due to locking.
+      pid = p->pid;
+      state = p->state;
+    }
+    else{
+      release(&p->lock);
+      continue;
+    }
+    release(&p->lock);
+    
+    printf("%s (%d): %d \n", name,  pid, state);
+  }
+}
+
