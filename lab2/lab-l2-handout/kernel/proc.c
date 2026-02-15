@@ -10,10 +10,16 @@ struct cpu cpus[NCPU];
 
 struct proc proc[NPROC];
 
+struct proc* queues[NQUEUES][NPROC];
+
+
 struct proc *initproc;
 
 int nextpid = 1;
 struct spinlock pid_lock;
+
+void rr_scheduler(void);   //rr dosent throw compile-error if it isnt defined here, but mlfq does???? 
+void mlfq_scheduler(void); 
 
 extern void forkret(void);
 static void freeproc(struct proc *p);
@@ -35,7 +41,6 @@ static SchedImpl available_schedulers[SCHEDC] = {
     {"MLFQ", &mlfq_scheduler, 2}};
 
 void (*sched_pointer)(void) = &rr_scheduler;
-
 
 // helps ensure that wakeups of wait()ing
 // parents are not lost. helps obey the
@@ -200,6 +205,7 @@ int allocpid()
 static struct proc *
 allocproc(void)
 {
+    
     struct proc *p;
 
     for (p = proc; p < &proc[NPROC]; p++)
@@ -207,12 +213,25 @@ allocproc(void)
         acquire(&p->lock);
         if (p->state == UNUSED)
         {
+            if(sched_pointer == &mlfq_scheduler){ //If the mlfq is in use, add new procs to the high priority queue
+                for(int i = 0; i < NPROC; i++){
+                    
+                    if(queues[0][i] == 0){//xv6 dosent have NULL apparently, just use a zero instead.
+                        queues[0][i] = p;
+                        p->ticks_used = 0;
+                        p->priority = 0;
+                        break;
+                    }
+                    panic("HIGH PRIO QUEUE FULL");//UH OH
+                }
+            }
             goto found;
         }
         else
         {
             release(&p->lock);
         }
+        
     }
     return 0;
 
@@ -564,15 +583,40 @@ void scheduler(void)
     }
 }
 
-void mlfq_scheduler(void){{
-    //Liksom to køer og sånt lisom,
-
+void mlfq_scheduler(void){
+    int s = 2;
+    int slices[] = {s*4, s*8};
     struct proc *p;
     struct cpu *c = mycpu;
+    c->proc = 0;
+    for (int i = 0; i < NQUEUES; i++){
+        for(int j = 0; j < NPROC; j++){
+            p = queues[i][j];
+            if (p->state == RUNNABLE){//Reused from rr. impl. below
+            // Switch to chosen process.  It is the process's job
+            // to release its lock and then reacquire it
+            // before jumping back to us.
+            p->state = RUNNING;
+            c->proc = p;
+            swtch(&c->context, &p->context);
+            p->ticks_used++;
 
-    intr_on();
-}}
+            if(p->ticks_used > slices[p->priority]){
+                reduce(p);
+            }
 
+            // Process is done running for now.
+            // It should have changed its p->state before coming back.
+            c->proc = 0;
+        }
+        release(&p->lock);
+        }
+    }
+}
+void demote(struct proc *p)//Move to lower pri
+{}
+void promote(struct proc *p)//Move to highest pri
+{}
 
 void rr_scheduler(void)
 {
