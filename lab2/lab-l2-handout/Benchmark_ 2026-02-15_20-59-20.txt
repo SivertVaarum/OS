@@ -1,0 +1,140 @@
+--- Run 1 ---
+*** Now run 'gdb' in another window.
+
+xv6 kernel is booting
+
+hart 2 starting
+hart 1 starting
+init: starting sh
+$ time sh load.sh
+114 349 1558 
+Executing sh took 27 ticks
+$ qemu-system-riscv64: terminating on signal 15 from pid 14018 (make)
+
+
+--- Run 2 ---
+*** Now run 'gdb' in another window.
+
+xv6 kernel is booting
+
+hart 1 starting
+hart 2 starting
+init: starting sh
+$ time sh load.sh
+135 416 1844 
+Executing sh took 28 ticks
+$ qemu-system-riscv64: terminating on signal 15 from pid 14048 (make)
+
+
+--- Run 3 ---
+*** Now run 'gdb' in another window.
+
+xv6 kernel is booting
+
+hart 2 starting
+hart 1 starting
+init: starting sh
+$ time sh load.sh
+133 412 1822 
+Executing sh took 29 ticks
+$ qemu-system-riscv64: terminating on signal 15 from pid 14078 (make)
+
+
+--- Run 4 ---
+*** Now run 'gdb' in another window.
+
+xv6 kernel is booting
+
+hart 2 starting
+hart 1 starting
+init: starting sh
+$ time sh load.sh
+118 362 1648 
+Executing sh took 28 ticks
+$ qemu-system-riscv64: terminating on signal 15 from pid 14108 (make)
+
+
+--- Run 5 ---
+*** Now run 'gdb' in another window.
+
+xv6 kernel is booting
+
+hart 1 starting
+hart 2 starting
+init: starting sh
+$ time sh load.sh
+95 290 1297 
+Executing sh took 29 ticks
+$ qemu-system-riscv64: terminating on signal 15 from pid 14138 (make)
+
+
+--- Run 6 ---
+*** Now run 'gdb' in another window.
+
+xv6 kernel is booting
+
+hart 1 starting
+hart 2 starting
+init: starting sh
+$ time sh load.sh
+136 410 1826 
+Executing sh took 29 ticks
+$ qemu-system-riscv64: terminating on signal 15 from pid 14168 (make)
+
+
+--- Run 7 ---
+*** Now run 'gdb' in another window.
+
+xv6 kernel is booting
+
+hart 1 starting
+hart 2 starting
+init: starting sh
+$ time sh load.sh
+114 345 1549 
+Executing sh took 28 ticks
+$ qemu-system-riscv64: terminating on signal 15 from pid 14198 (make)
+
+
+--- Run 8 ---
+*** Now run 'gdb' in another window.
+
+xv6 kernel is booting
+
+hart 1 starting
+hart 2 starting
+init: starting sh
+$ time sh load.sh
+152 467 2152 
+Executing sh took 28 ticks
+$ qemu-system-riscv64: terminating on signal 15 from pid 14228 (make)
+
+
+--- Run 9 ---
+*** Now run 'gdb' in another window.
+
+xv6 kernel is booting
+
+hart 2 starting
+hart 1 starting
+init: starting sh
+$ time sh load.sh
+123 367 1643 
+Executing sh took 27 ticks
+$ qemu-system-riscv64: terminating on signal 15 from pid 14258 (make)
+
+
+--- Run 10 ---
+*** Now run 'gdb' in another window.
+
+xv6 kernel is booting
+
+hart 2 starting
+hart 1 starting
+init: starting sh
+$ time sh load.sh
+150 459 2041 
+Executing sh took 28 ticks
+$ qemu-system-riscv64: terminating on signal 15 from pid 14288 (make)
+
+
