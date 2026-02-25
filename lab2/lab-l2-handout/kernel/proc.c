@@ -564,20 +564,33 @@ void scheduler(void)
         old_scheduler = sched_pointer;
     }
 }
-#define NQUEUES 4
+#define NQUEUES 3
+#define BOOST_INTERVAL 100
 void mlfq_scheduler(void)
 {
   struct proc *p;
   struct cpu *c = mycpu();
   c->proc = 0;
 
+  int slices[NQUEUES] = {4, 8, 16};
+
   for(;;){
     intr_on();
 
+    if(ticks % BOOST_INTERVAL == 0){//promote
+      for(p = proc; p < &proc[NPROC]; p++){
+        acquire(&p->lock);
+        if(p->state != UNUSED){
+          p->priority = 0;
+          p->ticks_used = 0;
+        }
+        release(&p->lock);
+      }
+    }
     struct proc *best = 0;
-    int best_pri = NQUEUES;  // larger than any valid priority
+    int best_pri = NQUEUES;
 
-    for(p = proc; p < &proc[NPROC]; p++){
+    for(p = proc; p < &proc[NPROC]; p++){//find viable process
       acquire(&p->lock);
 
       if(p->state == RUNNABLE){
@@ -594,26 +607,18 @@ void mlfq_scheduler(void)
       release(&p->lock);
     }
 
-    // Step 2: if we found one, run it
-    if(best){
+    if(best){//Context switch
       best->state = RUNNING;
       c->proc = best;
-
       swtch(&c->context, &best->context);
-
-      // We're back after process yielded or got preempted
       c->proc = 0;
-
       best->ticks_used++;
 
-      int slices[] = {8, 16, 32};  // must match NQUEUES
-
-      if(best->priority < NQUEUES-1 &&
-         best->ticks_used >= slices[best->priority]){
-        best->priority++;
+      if(best->ticks_used >= slices[best->priority]){//demote
+        if(best->priority < NQUEUES - 1)
+          best->priority++;
         best->ticks_used = 0;
       }
-
       release(&best->lock);
     }
   }

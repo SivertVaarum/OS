@@ -83,6 +83,7 @@ def test7():
 
             r.run_qemu(
                 shell_script([
+                    "schedset 2",
                     "time sh load.sh"
                 ])
             )

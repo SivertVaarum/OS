@@ -1,0 +1,160 @@
+--- Run 1 ---
+*** Now run 'gdb' in another window.
+
+xv6 kernel is booting
+
+hart 2 starting
+hart 1 starting
+init: starting sh
+$ schedset 2
+Scheduler successfully changed to MLFQ
+$ time sh load.sh
+224 674 3056 
+Executing sh took 30 ticks
+$ qemu-system-riscv64: terminating on signal 15 from pid 5038 (make)
+
+
+--- Run 2 ---
+*** Now run 'gdb' in another window.
+
+xv6 kernel is booting
+
+hart 2 starting
+hart 1 starting
+init: starting sh
+$ schedset 2
+Scheduler successfully changed to MLFQ
+$ time sh load.sh
+208 645 2913 
+Executing sh took 30 ticks
+$ qemu-system-riscv64: terminating on signal 15 from pid 5068 (make)
+
+
+--- Run 3 ---
+*** Now run 'gdb' in another window.
+
+xv6 kernel is booting
+
+hart 1 starting
+hart 2 starting
+init: starting sh
+$ schedset 2
+Scheduler successfully changed to MLFQ
+$ time sh load.sh
+218 648 2925 
+Executing sh took 30 ticks
+$ qemu-system-riscv64: terminating on signal 15 from pid 5098 (make)
+
+
+--- Run 4 ---
+*** Now run 'gdb' in another window.
+
+xv6 kernel is booting
+
+hart 1 starting
+hart 2 starting
+init: starting sh
+$ schedset 2
+Scheduler successfully changed to MLFQ
+$ time sh load.sh
+203 609 2714 
+Executing sh took 30 ticks
+$ qemu-system-riscv64: terminating on signal 15 from pid 5128 (make)
+
+
+--- Run 5 ---
+*** Now run 'gdb' in another window.
+
+xv6 kernel is booting
+
+hart 2 starting
+hart 1 starting
+init: starting sh
+$ schedset 2
+Scheduler successfully changed to MLFQ
+$ time sh load.sh
+234 713 3168 
+Executing sh took 30 ticks
+$ qemu-system-riscv64: terminating on signal 15 from pid 5158 (make)
+
+
+--- Run 6 ---
+*** Now run 'gdb' in another window.
+
+xv6 kernel is booting
+
+hart 2 starting
+hart 1 starting
+init: starting sh
+$ schedset 2
+Scheduler successfully changed to MLFQ
+$ time sh load.sh
+196 592 2718 
+Executing sh took 31 ticks
+$ qemu-system-riscv64: terminating on signal 15 from pid 5188 (make)
+
+
+--- Run 7 ---
+*** Now run 'gdb' in another window.
+
+xv6 kernel is booting
+
+hart 1 starting
+hart 2 starting
+init: starting sh
+$ schedset 2
+Scheduler successfully changed to MLFQ
+$ time sh load.sh
+211 639 2846 
+Executing sh took 29 ticks
+$ qemu-system-riscv64: terminating on signal 15 from pid 5218 (make)
+
+
+--- Run 8 ---
+*** Now run 'gdb' in another window.
+
+xv6 kernel is booting
+
+hart 1 starting
+hart 2 starting
+init: starting sh
+$ schedset 2
+Scheduler successfully changed to MLFQ
+$ time sh load.sh
+193 583 2632 
+Executing sh took 29 ticks
+$ qemu-system-riscv64: terminating on signal 15 from pid 5249 (make)
+
+
+--- Run 9 ---
+*** Now run 'gdb' in another window.
+
+xv6 kernel is booting
+
+hart 2 starting
+hart 1 starting
+init: starting sh
+$ schedset 2
+Scheduler successfully changed to MLFQ
+$ time sh load.sh
+205 623 2798 
+Executing sh took 30 ticks
+$ qemu-system-riscv64: terminating on signal 15 from pid 5279 (make)
+
+
+--- Run 10 ---
+*** Now run 'gdb' in another window.
+
+xv6 kernel is booting
+
+hart 1 starting
+hart 2 starting
+init: starting sh
+$ schedset 2
+Scheduler successfully changed to MLFQ
+$ time sh load.sh
+185 559 2582 
+Executing sh took 31 ticks
+$ qemu-system-riscv64: terminating on signal 15 from pid 5309 (make)
+
+
