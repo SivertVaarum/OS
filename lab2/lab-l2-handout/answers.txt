@@ -1,0 +1,17 @@
+1.3 Task 3: MLFQ – Measuring Performance
+As with the baseline, we ask you to take 10 measurements of the benchmark using your newly
+written MLFQ scheduler. Is the performance better, worse or comparable? Can you find an
+explanation for the behaviour?
+    >RR was slighly faster. MLFQ has more overhead and a lot more parameters to tweak such as 
+    >how many queues you want, how big the S should be and timeslice size. This could cause
+    >worse performance(on paper, mlfq allegedely "feels" more responsive in practice). 
+    >Maybe my implementation isnt in the sweet spot ¯\_(ツ)_/¯
+
+2 Performance Measurements
+1. What is the average of the baseline performance that you measured?
+    > average of 28.1
+2. What is the average of the performance measurements for the MLFQ?
+    >average of 29.9
+
+3. If you written an optimized scheduler, please provide the average of the timing measurements
+of the optimized version.
