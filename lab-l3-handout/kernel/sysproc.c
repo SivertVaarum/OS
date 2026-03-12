@@ -7,6 +7,7 @@
 #include "proc.h"
 
 extern uint64 FREE_PAGES; // kalloc.c keeps track of those
+extern struct proc proc[NPROC];
 
 uint64
 sys_exit(void)
@@ -117,10 +118,35 @@ uint64 sys_schedset(void)
     return 0;
 }
 
-uint64 sys_va2pa(void)
-{
-    printf("TODO: IMPLEMENT ME [%s@%s (line %d)]", __func__, __FILE__, __LINE__);
-    return 0;
+uint64 sys_va2pa(void){
+ 
+    int pid = 0;
+    uint64 va = 0;
+    argaddr(0, &va);
+    argint(1, &pid);
+
+    pagetable_t pagetable = 0;
+
+    if(pid == 0){
+        pagetable = myproc()->pagetable;
+    }
+    else{
+        struct proc *p;
+        for(p = proc; p < &proc[NPROC]; p++){
+
+            acquire(&p->lock);
+            if(p->state != UNUSED && p->pid == pid){
+                pagetable = p->pagetable;
+                release(&p->lock);
+                break;
+            }
+            release(&p->lock);
+        }
+    }
+    if(pagetable == 0) return 0;
+    uint64 pa0 = walkaddr(pagetable, va);
+    if(pa0 == 0) return 0;
+    return pa0 + (va & (PGSIZE -1));
 }
 
 uint64 sys_pfreepages(void)
