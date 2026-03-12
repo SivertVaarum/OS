@@ -10,20 +10,13 @@ struct cpu cpus[NCPU];
 
 struct proc proc[NPROC];
 
-struct proc* queues[NQUEUES][NPROC];
-
-
 struct proc *initproc;
 
 int nextpid = 1;
 struct spinlock pid_lock;
 
-void rr_scheduler(void);   //rr dosent throw compile-error if it isnt defined here, but mlfq does???? 
-void mlfq_scheduler(void); 
-
 extern void forkret(void);
 static void freeproc(struct proc *p);
-void mlfq_scheduler(void);
 
 extern char trampoline[]; // trampoline.S
 
@@ -36,10 +29,9 @@ typedef struct scheduler_impl
 
 // Register all available schedulers here
 // also update schedc, this indicates how long the SchedImpl array is
-#define SCHEDC 2
+#define SCHEDC 1
 static SchedImpl available_schedulers[SCHEDC] = {
-    {"Round Robin", &rr_scheduler, 1},
-    {"MLFQ", &mlfq_scheduler, 2}};
+    {"Round Robin", &rr_scheduler, 1}};
 
 void (*sched_pointer)(void) = &rr_scheduler;
 
@@ -206,7 +198,6 @@ int allocpid()
 static struct proc *
 allocproc(void)
 {
-    
     struct proc *p;
 
     for (p = proc; p < &proc[NPROC]; p++)
@@ -214,25 +205,12 @@ allocproc(void)
         acquire(&p->lock);
         if (p->state == UNUSED)
         {
-            if(sched_pointer == &mlfq_scheduler){ //If the mlfq is in use, add new procs to the high priority queue
-                for(int i = 0; i < NPROC; i++){
-                    
-                    if(queues[0][i] == 0){//xv6 dosent have NULL apparently, just use a zero instead.
-                        queues[0][i] = p;
-                        p->ticks_used = 0;
-                        p->priority = 0;
-                        break;
-                    }
-                    panic("HIGH PRIO QUEUE FULL");//UH OH
-                }
-            }
             goto found;
         }
         else
         {
             release(&p->lock);
         }
-        
     }
     return 0;
 
@@ -572,105 +550,48 @@ int wait(uint64 addr)
 void scheduler(void)
 {
     // level of indirection: that way we can change the scheduler during runtime
-    void (*old_scheduler)(void) = sched_pointer;
     while (1)
     {
-        if (old_scheduler != sched_pointer)
-        {
-            printf("Scheduler switched\n");
-        }
         (*sched_pointer)();
-        old_scheduler = sched_pointer;
     }
 }
-#define NQUEUES 3
-#define BOOST_INTERVAL 100
-void mlfq_scheduler(void)
-{
-  struct proc *p;
-  struct cpu *c = mycpu();
-  c->proc = 0;
 
-  int slices[NQUEUES] = {4, 8, 16};
-
-  for(;;){
-    intr_on();
-
-    if(ticks % BOOST_INTERVAL == 0){//promote
-      for(p = proc; p < &proc[NPROC]; p++){
-        acquire(&p->lock);
-        if(p->state != UNUSED){
-          p->priority = 0;
-          p->ticks_used = 0;
-        }
-        release(&p->lock);
-      }
-    }
-    struct proc *best = 0;
-    int best_pri = NQUEUES;
-
-    for(p = proc; p < &proc[NPROC]; p++){//find viable process
-      acquire(&p->lock);
-
-      if(p->state == RUNNABLE){
-        if(p->priority < best_pri){
-          if(best)
-            release(&best->lock);
-
-          best = p;
-          best_pri = p->priority;
-          continue;
-        }
-      }
-
-      release(&p->lock);
-    }
-
-    if(best){//Context switch
-      best->state = RUNNING;
-      c->proc = best;
-      swtch(&c->context, &best->context);
-      c->proc = 0;
-      best->ticks_used++;
-
-      if(best->ticks_used >= slices[best->priority]){//demote
-        if(best->priority < NQUEUES - 1)
-          best->priority++;
-        best->ticks_used = 0;
-      }
-      release(&best->lock);
-    }
-  }
-}
 void rr_scheduler(void)
 {
     struct proc *p;
     struct cpu *c = mycpu();
 
     c->proc = 0;
-    // Avoid deadlock by ensuring that devices can interrupt.
-    intr_on();
-
-    for (p = proc; p < &proc[NPROC]; p++)
+    for (;;)
     {
-        acquire(&p->lock);
-        if (p->state == RUNNABLE)
-        {
-            // Switch to chosen process.  It is the process's job
-            // to release its lock and then reacquire it
-            // before jumping back to us.
-            p->state = RUNNING;
-            c->proc = p;
-            swtch(&c->context, &p->context);
+        // Avoid deadlock by ensuring that devices can interrupt.
+        intr_on();
 
-            // Process is done running for now.
-            // It should have changed its p->state before coming back.
-            c->proc = 0;
+        for (p = proc; p < &proc[NPROC]; p++)
+        {
+            acquire(&p->lock);
+            if (p->state == RUNNABLE)
+            {
+                // Switch to chosen process.  It is the process's job
+                // to release its lock and then reacquire it
+                // before jumping back to us.
+                p->state = RUNNING;
+                c->proc = p;
+                swtch(&c->context, &p->context);
+                // check if we are still the right scheduler (or if schedset changed)
+                if (sched_pointer != &rr_scheduler)
+                {
+                    release(&p->lock);
+                    return;
+                }
+
+                // Process is done running for now.
+                // It should have changed its p->state before coming back.
+                c->proc = 0;
+            }
+            release(&p->lock);
         }
-        release(&p->lock);
     }
-    // In case a setsched happened, we will switch to the new scheduler after one
-    // Round Robin round has completed.
 }
 
 // Switch to scheduler.  Must hold only p->lock
@@ -700,7 +621,7 @@ void sched(void)
 }
 
 // Give up the CPU for one scheduling round.
-void yield(uint64 reason)
+void yield(void)
 {
     struct proc *p = myproc();
     acquire(&p->lock);
