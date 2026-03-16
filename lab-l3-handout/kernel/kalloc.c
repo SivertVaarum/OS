@@ -28,9 +28,37 @@ struct
     struct run *freelist;
 } kmem;
 
+#define NPAGES ((PHYSTOP-KERNBASE)/PGSIZE)
+struct spinlock refcountlock;
+int refcount[NPAGES];
+
+int refindex(void *pa){
+    if (((uint64)pa % PGSIZE) != 0 || (uint64)pa < KERNBASE || (uint64)pa >= PHYSTOP)
+        panic("refindex");
+    return ((uint64) pa - KERNBASE) / PGSIZE;
+}
+int getrefcount(uint64 pa){
+    int count;
+    acquire(&refcountlock);
+    count = refcount[refindex((void*)pa)];
+    release(&refcountlock);
+    return count;
+}
+void decrefcount(uint64 pa){
+    acquire(&refcountlock);
+    refcount[refindex((void*)pa)]--;
+    release(&refcountlock);
+}
+void increfcount(uint64 pa){
+    acquire(&refcountlock);
+    refcount[refindex((void*)pa)]++;
+    release(&refcountlock);
+}
+
 void kinit()
 {
     initlock(&kmem.lock, "kmem");
+    initlock(&refcountlock, "refcount");
     freerange(end, (void *)PHYSTOP);
     MAX_PAGES = FREE_PAGES;
 }
@@ -57,6 +85,16 @@ void kfree(void *pa)
 
     if (((uint64)pa % PGSIZE) != 0 || (char *)pa < end || (uint64)pa >= PHYSTOP)
         panic("kfree");
+
+    int i = refindex(pa);
+    int empty;
+
+    acquire(&refcountlock);
+    if(refcount[i] > 0) refcount[i]--;
+    empty = refcount[i] == 0;
+    release(&refcountlock);
+    if(!empty) return;
+
 
     // Fill with junk to catch dangling refs.
     memset(pa, 1, PGSIZE);
@@ -88,5 +126,11 @@ kalloc(void)
     if (r)
         memset((char *)r, 5, PGSIZE); // fill with junk
     FREE_PAGES--;
+
+    int i = refindex((void*) r);
+    acquire(&refcountlock);
+    refcount[i] = 1;
+    release(&refcountlock);
+
     return (void *)r;
 }

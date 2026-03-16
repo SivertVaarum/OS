@@ -65,7 +65,35 @@ usertrap(void)
     intr_on();
 
     syscall();
-  } else if((which_dev = devintr()) != 0){
+  } 
+  else if(r_scause() == 15){
+    uint64 va = PGROUNDDOWN(r_stval());
+    acquire(&p->lock);
+    pagetable_t pgtable = p->pagetable;
+    int pid = p->pid;
+    release(&p->lock);
+
+    pte_t *pgentry = walk(pgtable, va, 0);
+
+    if(pgentry && (PTE_COW & *pgentry)){
+      uint64 pa = vatopa(va, pid);
+      int refcount = getrefcount(pa);
+      *pgentry &= ~PTE_COW;
+      *pgentry |= PTE_W;
+
+      if(refcount > 1 ){
+        decrefcount(pa);
+        void* new = kalloc();
+        if(new == 0){
+          panic("oh shit");
+        }
+        memmove(new, (void*) pa, PGSIZE);
+        uint flags = PTE_FLAGS(*pgentry);
+        *pgentry = PA2PTE(new) | flags;
+      }
+    }
+  }
+  else if((which_dev = devintr()) != 0){
     // ok
   } else {
     printf("usertrap(): unexpected scause %p pid=%d\n", r_scause(), p->pid);
